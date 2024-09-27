@@ -1,0 +1,29 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "target": "ES2020",
+        "moduleDetection": "force",
+        "module": "Preserve",
+        "resolveJsonModule": true,
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "allowJs": true,
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "strictNullChecks": true,
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true, // Allow navigation to definition in VS Code https://stackoverflow.com/questions/54459847/vscode-lerna-typescript-monorepo-code-navigation
+        "outDir": "dist", // incase tsc gets run, put the garbage in dist rather than the src folder
+        "baseUrl": ".",
+        "paths": {
+            "@/": ["./src/"]
+        },
+        "typeRoots": ["./types", "./node_modules/@types"],
+    },
+    "exclude": ["node_modules", "/*.d.ts", "/dist/*"],
+    "include": ["src/*/.ts"]
+}
