@@ -29,42 +29,6 @@ const addressSchema = z.object({
     id: z.string(),
 })
 
-const outboundOrderItemSchema = z.object({
-    details: z.object({
-        product: z.object({
-            customer: z.object({
-                enabled: z.boolean(),
-                name: z.string(),
-                id: z.string(),
-            }),
-            name: z.string(),
-            references: z.object({
-                code: z.string(),
-            }),
-            id: z.string(),
-        }),
-        unitOfMeasure: z.object({
-            type: z.string(),
-            name: z.string(),
-        }),
-    }),
-    type: z.string(),
-    measures: z.object({
-        quantity: z.number(),
-    }),
-    references: z.object({
-        numericId: z.string(),
-    }),
-    properties: z.object({
-        sop_custom_field_1: z.string(),
-        sop_custom_field_2: z.string(),
-        sop_custom_field_3: z.string(),
-        batchNumber: z.string(),
-        expiryDate: z.string(),
-    }),
-    id: z.string(),
-})
-
 export const outboundOrderSchema = z.object({
     details: z.object({
         urgent: z.boolean(),
@@ -83,7 +47,43 @@ export const outboundOrderSchema = z.object({
             instructions: z.string(),
         }),
     }),
-    items: z.array(outboundOrderItemSchema),
+    items: z.array(
+        z.object({
+            details: z.object({
+                product: z.object({
+                    customer: z.object({
+                        enabled: z.boolean(),
+                        name: z.string(),
+                        id: z.string(),
+                    }),
+                    name: z.string(),
+                    references: z.object({
+                        code: z.string(),
+                    }),
+                    id: z.string(),
+                }),
+                unitOfMeasure: z.object({
+                    type: z.string(),
+                    name: z.string(),
+                }),
+            }),
+            type: z.string(),
+            measures: z.object({
+                quantity: z.number(),
+            }),
+            references: z.object({
+                numericId: z.string(),
+            }),
+            properties: z.object({
+                sop_custom_field_1: z.string(),
+                sop_custom_field_2: z.string(),
+                sop_custom_field_3: z.string(),
+                batchNumber: z.string(),
+                expiryDate: z.string(),
+            }),
+            id: z.string(),
+        })
+    ),
     type: z.string(),
     status: z.string(),
     customer: z.object({
@@ -167,8 +167,10 @@ export const consignmentSchema = z.object({
     id: z.string().uuid(),
 })
 
-type Address = z.infer<typeof addressSchema>
-type OutboundOrderItem = z.infer<typeof outboundOrderItemSchema>
+// Still not sure what this will look like
+// Likely we won't need this schema
+export const inboundOrderSchema = z.object({})
 
-export type Consignment = z.infer<typeof consignmentSchema>
-export type OutboundOrder = z.infer<typeof outboundOrderSchema>
+// export type InboundOrder = z.infer<typeof inboundOrderSchema>
+// export type Consignment = z.infer<typeof consignmentSchema>
+// export type OutboundOrder = z.infer<typeof outboundOrderSchema>
