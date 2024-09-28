@@ -24,9 +24,15 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
     const { CC_API_KEY } = env(c)
     const authHeader = c.req.header('Authorization')
 
-    if (authHeader !== CC_API_KEY) {
-        return c.json({ message: 'not authorized' }, 401)
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ message: 'Invalid authorization header' }, 401)
     }
+
+    const token = authHeader.split(' ')[1]
+    if (token !== CC_API_KEY) {
+        return c.json({ message: 'Not authorized' }, 401)
+    }
+
     await next()
 })
 
@@ -53,7 +59,7 @@ app.use(logger())
 app.use(authorizeHeaderToken)
 
 app.post(
-    '/webhook/hook-purchaseorder',
+    '/webhooks/hook-purchaseorder',
     // zValidator('json', outboundOrderSchema.partial().passthrough()),
     async (c) => {
         // const outboundOrder = c.req.valid('json')
@@ -68,7 +74,7 @@ app.post(
 )
 
 app.post(
-    '/webhook/hook-consignment',
+    '/webhooks/hook-consignment',
     // zValidator('json', consignmentSchema.partial().passthrough()),
     async (c) => {
         // const consignment = c.req.valid('json')
@@ -84,7 +90,7 @@ app.post(
 )
 
 app.post(
-    '/webhook/hook-inboundorder',
+    '/webhooks/hook-inboundorder',
     // zValidator('json', inboundOrderSchema.partial().passthrough()),
     async (c) => {
         // const inboundOrder = c.req.valid('json')
@@ -101,5 +107,6 @@ app.post(
 
 serve({
     fetch: app.fetch,
-    port: 8080,
+    port: 8000,
+    hostname: '0.0.0.0',
 })
