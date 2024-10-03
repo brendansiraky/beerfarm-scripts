@@ -56,7 +56,7 @@ const saveLog = (data: any, type: 'consignment' | 'outbound' | 'inbound') => {
 
 const app = new Hono<Env>()
 app.use(logger())
-app.use(authorizeHeaderToken)
+// app.use(authorizeHeaderToken)
 
 app.post(
     '/webhooks/hook-purchaseorder',
