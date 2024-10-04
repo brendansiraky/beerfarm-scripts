@@ -27,7 +27,7 @@ services:
             - 'traefik.http.routers.beerfarm-webhook.entrypoints=web'
             - 'traefik.http.services.beerfarm-webhook.loadbalancer.server.port=3000'
             - 'traefik.http.services.beerfarm-webhook.loadbalancer.server.scheme=http'
-            - 'traefik.http.routers.guestbook.rule=Host(`hooks.thebeer.farm`)'
+            - 'traefik.http.routers.beerfarm-webhook.rule=Host(`hooks.thebeer.farm`)'
             # - 'traefik.http.routers.guestbook.tls.certresolver=myresolver'
         # deploy:
         # mode: replicated
