@@ -58,6 +58,8 @@ const app = new Hono<Env>()
 app.use(logger())
 // app.use(authorizeHeaderToken)
 
+app.get('/health', (c) => c.json({ message: 'OK' }, 200))
+
 app.post(
     '/webhooks/hook-purchaseorder',
     // zValidator('json', outboundOrderSchema.partial().passthrough()),
@@ -106,6 +108,5 @@ app.post(
 
 serve({
     fetch: app.fetch,
-    port: 8000,
-    hostname: '0.0.0.0',
+    port: 3000,
 })
