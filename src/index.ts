@@ -64,13 +64,8 @@ app.post(
     '/webhooks/hook-purchaseorder',
     // zValidator('json', outboundOrderSchema.partial().passthrough()),
     async (c) => {
-        // const outboundOrder = c.req.valid('json')
-        // const outboundOrder = await c.req.json()
-        // console.log(
-        //     'Received Outbound Order:',
-        //     JSON.stringify(outboundOrder, null, 2)
-        // )
-        saveLog({ message: 'Received - Purchase Order' }, 'outbound')
+        const outboundOrder = await c.req.json()
+        saveLog(outboundOrder, 'outbound')
         return c.json({ message: 'Received - Purchase Order' }, 202)
     }
 )
@@ -79,13 +74,8 @@ app.post(
     '/webhooks/hook-consignment',
     // zValidator('json', consignmentSchema.partial().passthrough()),
     async (c) => {
-        // const consignment = c.req.valid('json')
-        // const consignment = await c.req.json()
-        // console.log(
-        //     'Received Consignment:',
-        //     JSON.stringify(consignment, null, 2)
-        // )
-        saveLog({ message: 'Received - Consignment' }, 'consignment')
+        const consignment = await c.req.json()
+        saveLog(consignment, 'consignment')
         return c.json({ message: 'Received - Consignment' }, 202)
     }
 )
@@ -94,14 +84,8 @@ app.post(
     '/webhooks/hook-inboundorder',
     // zValidator('json', inboundOrderSchema.partial().passthrough()),
     async (c) => {
-        // const inboundOrder = c.req.valid('json')
-        // const inboundOrder = await c.req.json()
-        // console.log(
-        //     'Received Inbound Order:',
-        //     JSON.stringify(inboundOrder, null, 2)
-        // )
-        // console.log('Saving inbound order log...')
-        saveLog({ message: 'Received - Inbound Order' }, 'inbound')
+        const inboundOrder = await c.req.json()
+        saveLog(inboundOrder, 'inbound')
         return c.json({ message: 'Received - Inbound Order' }, 202)
     }
 )
