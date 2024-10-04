@@ -6,29 +6,30 @@ services:
             - '--providers.docker'
             - '--providers.docker.exposedbydefault=false'
             - '--entrypoints.web.address=:80'
-            # - '--entryPoints.websecure.address=:80'
-            # - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
-            # - '--certificatesresolvers.myresolver.acme.email=brendansiraky@gmail.com'
-            # - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
-            # - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
-            # - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+            - '--entrypoints.websecure.address=:443'
+            - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+            - '--certificatesresolvers.myresolver.acme.email=brendansiraky@gmail.com'
+            - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
+            - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+            - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
         ports:
             - '80:80'
             - '8080:8080'
+            - '443:443'
         networks:
             - app
         volumes:
-            # - letsencrypt:/letsencrypt
+            - letsencrypt:/letsencrypt
             - /var/run/docker.sock:/var/run/docker.sock
     beerfarm-webhook:
         build: .
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.beerfarm-webhook.entrypoints=web'
+            - 'traefik.http.routers.beerfarm-webhook.entrypoints=websecure'
             - 'traefik.http.services.beerfarm-webhook.loadbalancer.server.port=3000'
             - 'traefik.http.services.beerfarm-webhook.loadbalancer.server.scheme=http'
             - 'traefik.http.routers.beerfarm-webhook.rule=Host(`hooks.thebeer.farm`)'
-            # - 'traefik.http.routers.guestbook.tls.certresolver=myresolver'
+            - 'traefik.http.routers.beerfarm-webhook.tls.certresolver=myresolver'
         # deploy:
         # mode: replicated
         # replicas: 3
@@ -36,11 +37,8 @@ services:
         restart: always
         networks:
             - app
-        # ports:
-        #     - '3000:3000'
         expose:
             - '3000'
-
 volumes:
     letsencrypt:
 networks:
