@@ -106,9 +106,6 @@ export const outboundOrderSchema = z.object({
 
 export const consignmentSchema = z.object({
     details: z.object({
-        manifest: z.object({
-            id: z.string().uuid(),
-        }),
         type: z.string(),
         authorityToLeave: z.boolean(),
         runsheet: z.object({
@@ -126,13 +123,58 @@ export const consignmentSchema = z.object({
             id: z.string().uuid(),
         }),
         collect: z.object({
-            address: addressSchema,
+            address: addressSchema.extend({
+                phone: z.string().optional(),
+                properties: z
+                    .object({
+                        ins: z.string(),
+                        ot: z.string(),
+                        ct: z.string(),
+                    })
+                    .optional(),
+            }),
         }),
         deliver: z.object({
-            address: addressSchema,
+            address: addressSchema.extend({
+                contactName: z.string().optional(),
+                properties: z
+                    .object({
+                        ins: z.string(),
+                        ot: z.string(),
+                        ct: z.string(),
+                    })
+                    .optional(),
+            }),
             instructions: z.string(),
         }),
     }),
+    items: z.array(
+        z.object({
+            details: z.object({
+                product: z.object({
+                    name: z.string(),
+                    references: z.object({
+                        code: z.string(),
+                    }),
+                    id: z.string().uuid(),
+                }),
+                job: z
+                    .object({
+                        id: z.string().uuid(),
+                    })
+                    .optional(),
+            }),
+            type: z.string(),
+            measures: z.object({
+                weight: z.number().optional(),
+                quantity: z.number(),
+            }),
+            properties: z.object({
+                description: z.string(),
+            }),
+            id: z.string().uuid(),
+        })
+    ),
     areChargesEditable: z.boolean(),
     source: z.string(),
     type: z.string(),
@@ -164,6 +206,12 @@ export const consignmentSchema = z.object({
         customer: z.string(),
         numericId: z.string(),
     }),
+    properties: z.object({
+        'collect.cins': z.string(),
+        serviceType: z.string(),
+        'collect.cot': z.string(),
+        'collect.cct': z.string(),
+    }),
     id: z.string().uuid(),
 })
 
@@ -171,6 +219,6 @@ export const consignmentSchema = z.object({
 // Likely we won't need this schema
 export const inboundOrderSchema = z.object({})
 
-// export type InboundOrder = z.infer<typeof inboundOrderSchema>
-// export type Consignment = z.infer<typeof consignmentSchema>
-// export type OutboundOrder = z.infer<typeof outboundOrderSchema>
+export type InboundOrder = z.infer<typeof inboundOrderSchema>
+export type Consignment = z.infer<typeof consignmentSchema>
+export type OutboundOrder = z.infer<typeof outboundOrderSchema>

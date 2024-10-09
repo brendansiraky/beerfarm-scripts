@@ -3,11 +3,13 @@
     "version": "0.0.0",
     "type": "module",
     "devDependencies": {
+        "@types/crypto-js": "^4.2.2",
         "@types/node": "^20.11.17",
         "tsx": "^4.7.1",
         "typescript": "^5.5.3"
     },
     "scripts": {
+        "file": "tsx --env-file=.env",
         "start": "tsx --env-file=.env src/index.ts",
         "dev": "tsx watch --env-file=.env src/index.ts",
         "lint": "eslint .",
@@ -18,7 +20,11 @@
     "dependencies": {
         "@hono/node-server": "^1.12.2",
         "@hono/zod-validator": "^0.2.2",
+        "axios": "^1.7.7",
+        "crypto-js": "^4.2.0",
         "hono": "^4.5.11",
+        "oauth-1.0a": "^2.2.6",
+        "qs": "^6.13.0",
         "zod": "^3.23.8",
         "zod-validation-error": "^3.3.1"
     }
