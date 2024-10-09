@@ -11,10 +11,10 @@ import {
     inboundOrderSchema,
     outboundOrderSchema,
 } from './validation'
-import {
-    getSalesOrderIdByTranId,
-    updateSalesOrderByTranId,
-} from '../api/salesOrder'
+// import {
+//     getSalesOrderIdByTranId,
+//     updateSalesOrderByTranId,
+// } from '../api/salesOrder'
 
 // Define environment type for type-safety
 type Env = {
@@ -77,15 +77,13 @@ app.post(
         const tranIdFromCC = consignment.references?.customer
         if (consignment.details?.runsheet?.date && tranIdFromCC) {
             // 1. Receive the consignment
-
             // 2. Get the sales order id by the consignment customer
-            const salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
-
-            // 3. Update the sales order with the consignment est delivery date
-            // Add whichever updates to the sales order here.
-            await updateSalesOrderByTranId(salesOrder.id, salesOrder.tranId, {
-                custbody_ce_estdeliverydate: consignment.details.runsheet.date,
-            })
+            // const salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
+            // // 3. Update the sales order with the consignment est delivery date
+            // // Add whichever updates to the sales order here.
+            // await updateSalesOrderByTranId(salesOrder.id, salesOrder.tranId, {
+            //     custbody_ce_estdeliverydate: consignment.details.runsheet.date,
+            // })
         }
 
         saveLog(consignment, 'consignment')
