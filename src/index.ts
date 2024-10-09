@@ -26,8 +26,7 @@ type Env = {
 // Middleware to authorize requests using a header token
 const authorizeHeaderToken = createMiddleware(async (c, next) => {
     if (c.req.path === '/health') {
-        await next()
-        return
+        return c.json({ message: 'OK' }, 200)
     }
 
     const { CC_API_KEY } = env(c)
@@ -68,9 +67,6 @@ const app = new Hono<Env>()
 // Apply middleware
 app.use(logger())
 app.use(authorizeHeaderToken)
-
-// Health check endpoint
-app.get('/health', (c) => c.json({ message: 'OK' }, 200))
 
 // Webhook endpoint for consignments
 app.post(
