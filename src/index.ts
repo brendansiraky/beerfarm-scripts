@@ -5,6 +5,7 @@ import { logger } from 'hono/logger'
 import { env } from 'hono/adapter'
 import { Hono } from 'hono'
 
+import { saveLog } from './helpers/saveLog'
 import {
     consignmentSchema,
     inboundOrderSchema,
@@ -14,7 +15,6 @@ import {
     getSalesOrderIdByTranId,
     updateSalesOrderByTranId,
 } from '../api/salesOrder'
-import { saveLog } from './helpers/saveLog'
 
 // Define environment type for type-safety
 type Env = {
@@ -25,6 +25,11 @@ type Env = {
 
 // Middleware to authorize requests using a header token
 const authorizeHeaderToken = createMiddleware(async (c, next) => {
+    if (c.req.path === '/health') {
+        await next()
+        return
+    }
+
     const { CC_API_KEY } = env(c)
     const authHeader = c.req.header('Authorization')
 
@@ -44,6 +49,15 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
     if (token !== CC_API_KEY) {
         return c.json({ message: 'Not authorized' }, 401)
     }
+
+    saveLog(
+        {
+            request: c.req,
+            authHeader,
+            message: 'Authorized',
+        },
+        'auth'
+    )
 
     await next()
 })
@@ -88,7 +102,7 @@ app.post(
     '/webhooks/hook-purchaseorder',
     zValidator('json', outboundOrderSchema.partial().passthrough()),
     async (c) => {
-        const outboundOrder = await c.req.json()
+        const outboundOrder = c.req.valid('json')
         saveLog(outboundOrder, 'outbound')
         return c.json({ message: 'Received - Purchase Order' }, 202)
     }
@@ -99,7 +113,7 @@ app.post(
     '/webhooks/hook-inboundorder',
     zValidator('json', inboundOrderSchema.partial().passthrough()),
     async (c) => {
-        const inboundOrder = await c.req.json()
+        const inboundOrder = c.req.valid('json')
         saveLog(inboundOrder, 'inbound')
         return c.json({ message: 'Received - Inbound Order' }, 202)
     }
