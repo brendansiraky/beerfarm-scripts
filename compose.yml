@@ -39,8 +39,8 @@ services:
             - app
         expose:
             - '3000'
-        # volumes:
-        #     - logs:/var/app/logs
+        volumes:
+            - logs:/var/app/logs
 volumes:
     letsencrypt:
 networks:
