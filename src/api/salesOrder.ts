@@ -1,6 +1,6 @@
 import { SalesOrderDetailResponse, SalesOrderResponse } from './types'
-import { buildQueryString } from '../src/helpers/buildQueryString'
-import { saveLog } from '../src/helpers/saveLog'
+import { buildQueryString } from '../helpers/buildQueryString'
+import { saveLog } from '../helpers/saveLog'
 import { netSuiteRequest } from './netsuite'
 
 const SALES_ORDER_URL = `https://${process.env.NS_ACCOUNT_ID}.suitetalk.api.netsuite.com/services/rest/record/v1/salesOrder`
