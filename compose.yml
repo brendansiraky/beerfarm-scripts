@@ -43,6 +43,7 @@ services:
             - logs:/var/app/logs
 volumes:
     letsencrypt:
+    logs:
 networks:
     app:
         driver: bridge
