@@ -29,6 +29,14 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
     const authHeader = c.req.header('Authorization')
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        saveLog(
+            {
+                request: c.req,
+                authHeader,
+                message: 'Invalid authorization header',
+            },
+            'auth'
+        )
         return c.json({ message: 'Invalid authorization header' }, 401)
     }
 
