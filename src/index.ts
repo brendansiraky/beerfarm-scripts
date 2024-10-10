@@ -3,7 +3,7 @@ import { createMiddleware } from 'hono/factory'
 import { serve } from '@hono/node-server'
 import { logger } from 'hono/logger'
 import { env } from 'hono/adapter'
-import { Hono } from 'hono'
+import { Hono, HonoRequest } from 'hono'
 
 import { saveLog } from './helpers/saveLog'
 import {
@@ -32,12 +32,24 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
     const { CC_API_KEY } = env(c)
     const authHeader = c.req.header('Authorization')
 
+    // Function to get valid JSON or return an empty object
+    const getValidJSON = async (req: HonoRequest): Promise<object> => {
+        try {
+            return await req.json()
+        } catch (error) {
+            return {}
+        }
+    }
+
+    const body = await getValidJSON(c.req)
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         saveLog(
             {
                 request: c.req,
                 authHeader,
                 message: 'Invalid authorization header',
+                body,
             },
             'auth'
         )
@@ -54,6 +66,7 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
             request: c.req,
             authHeader,
             message: 'Authorized',
+            body,
         },
         'auth'
     )
