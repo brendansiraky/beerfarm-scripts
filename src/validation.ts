@@ -29,7 +29,7 @@ const addressSchema = z.object({
     id: z.string(),
 })
 
-export const outboundOrderSchema = z.object({
+export const purchaseOrderSchema = z.object({
     details: z.object({
         urgent: z.boolean(),
         invoiceValue: z.object({
@@ -217,8 +217,8 @@ export const consignmentSchema = z.object({
 
 // Still not sure what this will look like
 // Likely we won't need this schema
-export const inboundOrderSchema = z.object({})
+export const salesOrderSchema = z.object({})
 
-export type InboundOrder = z.infer<typeof inboundOrderSchema>
+export type SalesOrder = z.infer<typeof salesOrderSchema>
 export type Consignment = z.infer<typeof consignmentSchema>
-export type OutboundOrder = z.infer<typeof outboundOrderSchema>
+export type PurchaseOrder = z.infer<typeof purchaseOrderSchema>

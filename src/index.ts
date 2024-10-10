@@ -8,8 +8,8 @@ import { Hono } from 'hono'
 import { saveLog } from './helpers/saveLog'
 import {
     consignmentSchema,
-    inboundOrderSchema,
-    outboundOrderSchema,
+    salesOrderSchema,
+    purchaseOrderSchema,
 } from './validation'
 import {
     getSalesOrderIdByTranId,
@@ -96,22 +96,22 @@ app.post(
 // Webhook endpoint for purchase orders
 app.post(
     '/webhooks/hook-purchaseorder',
-    zValidator('json', outboundOrderSchema.partial().passthrough()),
+    zValidator('json', purchaseOrderSchema.partial().passthrough()),
     async (c) => {
-        const outboundOrder = c.req.valid('json')
-        saveLog(outboundOrder, 'outbound')
+        const purchaseOrder = c.req.valid('json')
+        saveLog(purchaseOrder, 'purchase')
         return c.json({ message: 'Received - Purchase Order' }, 202)
     }
 )
 
-// Webhook endpoint for inbound orders
+// Webhook endpoint for sales orders
 app.post(
-    '/webhooks/hook-inboundorder',
-    zValidator('json', inboundOrderSchema.partial().passthrough()),
+    '/webhooks/hook-salesorder',
+    zValidator('json', salesOrderSchema.partial().passthrough()),
     async (c) => {
-        const inboundOrder = c.req.valid('json')
-        saveLog(inboundOrder, 'inbound')
-        return c.json({ message: 'Received - Inbound Order' }, 202)
+        const salesOrder = c.req.valid('json')
+        saveLog(salesOrder, 'sales')
+        return c.json({ message: 'Received - Sales Order' }, 202)
     }
 )
 
@@ -119,5 +119,4 @@ app.post(
 serve({
     fetch: app.fetch,
     port: 3000,
-    // hostname: '0.0.0.0',
 })
