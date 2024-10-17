@@ -26,7 +26,7 @@ type Env = {
 // Middleware to authorize requests using a header token
 const authorizeHeaderToken = createMiddleware(async (c, next) => {
     if (c.req.path === '/health') {
-        return c.json({ message: 'OK' }, 200)
+        return c.json({ message: 'OK-V1' }, 200)
     }
 
     const { CC_API_KEY } = env(c)
