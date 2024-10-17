@@ -30,9 +30,9 @@ services:
             - 'traefik.http.services.beerfarm-webhook.loadbalancer.server.scheme=http'
             - 'traefik.http.routers.beerfarm-webhook.rule=Host(`hooks.thebeer.farm`)'
             - 'traefik.http.routers.beerfarm-webhook.tls.certresolver=myresolver'
-        # deploy:
-        #     mode: replicated
-        #     replicas: 3
+        deploy:
+            mode: replicated
+            replicas: 3
         env_file: .env
         restart: always
         networks:

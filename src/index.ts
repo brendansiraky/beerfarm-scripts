@@ -51,7 +51,7 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
                 message: 'Invalid authorization header',
                 body,
             },
-            'auth'
+            'auth-unauthorized'
         )
         return c.json({ message: 'Invalid authorization header' }, 401)
     }
@@ -68,7 +68,7 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
             message: 'Authorized',
             body,
         },
-        'auth'
+        'auth-authorized'
     )
 
     await next()
@@ -107,6 +107,8 @@ app.post(
 )
 
 // Webhook endpoint for purchase orders
+// TODO - Beerfarm update something in CC which we then need to read the status coming through in the purchaseorder webbook.
+// We need to check if the status is REJECTED, then potentially fire off an email to beerfarm letting them know something was rejected.
 app.post(
     '/webhooks/hook-purchaseorder',
     zValidator('json', purchaseOrderSchema.partial().passthrough()),
@@ -123,6 +125,21 @@ app.post(
     zValidator('json', salesOrderSchema.partial().passthrough()),
     async (c) => {
         const salesOrder = c.req.valid('json')
+
+        const tranIdFromCC = salesOrder.references?.customer
+        const status = salesOrder?.status
+        if (status && tranIdFromCC) {
+            // 1. Receive the consignment
+
+            // 2. Get the sales order id by the consignment customer
+            const salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
+
+            // 3. Update the sales order with the status from the salesorder change
+            await updateSalesOrderByTranId(salesOrder.id, salesOrder.tranId, {
+                custbody_status: status,
+            })
+        }
+
         saveLog(salesOrder, 'sales')
         return c.json({ message: 'Received - Sales Order' }, 202)
     }

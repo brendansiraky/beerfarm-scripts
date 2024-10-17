@@ -85,7 +85,14 @@ export const purchaseOrderSchema = z.object({
         })
     ),
     type: z.string(),
-    status: z.string(),
+    status: z.enum([
+        'DRAFT',
+        'NOT_YET_RECEIVED',
+        'RECEIVED',
+        'VERIFIED',
+        'ALLOCATED',
+        'REJECTED',
+    ]),
     customer: z.object({
         enabled: z.boolean(),
         name: z.string(),
@@ -215,9 +222,105 @@ export const consignmentSchema = z.object({
     id: z.string().uuid(),
 })
 
-// Still not sure what this will look like
-// Likely we won't need this schema
-export const salesOrderSchema = z.object({})
+export const salesOrderSchema = z.object({
+    details: z.object({
+        urgent: z.boolean(),
+        invoiceValue: z.object({
+            amount: z.number(),
+            currency: z.string(),
+        }),
+        collect: z.object({
+            address: addressSchema.extend({
+                phone: z.string().optional(),
+                email: z.string().optional(),
+                properties: z
+                    .object({
+                        ins: z.string(),
+                        ot: z.string(),
+                        ct: z.string(),
+                    })
+                    .optional(),
+            }),
+        }),
+        deliver: z.object({
+            method: z.object({
+                type: z.string(),
+            }),
+            address: addressSchema.extend({
+                phone: z.string().optional(),
+                email: z.string().optional(),
+                properties: z
+                    .object({
+                        ins: z.string(),
+                        ot: z.string(),
+                        ct: z.string(),
+                    })
+                    .optional(),
+            }),
+            instructions: z.string(),
+        }),
+    }),
+    items: z.array(
+        z.object({
+            details: z.object({
+                product: z.object({
+                    customer: z.object({
+                        enabled: z.boolean(),
+                        name: z.string(),
+                        id: z.string().uuid(),
+                    }),
+                    name: z.string(),
+                    references: z.object({
+                        code: z.string(),
+                    }),
+                    id: z.string().uuid(),
+                }),
+                unitOfMeasure: z.object({
+                    type: z.string(),
+                    name: z.string(),
+                }),
+            }),
+            type: z.string(),
+            measures: z.object({
+                quantity: z.number(),
+            }),
+            references: z.object({
+                numericId: z.string(),
+            }),
+            properties: z.object({
+                sop_custom_field_1: z.string(),
+                sop_custom_field_2: z.string(),
+                sop_custom_field_3: z.string(),
+            }),
+            id: z.string().uuid(),
+        })
+    ),
+    type: z.string(),
+    status: z.enum([
+        'AWAITING_PICK_AND_PACK',
+        'DISPATCHED',
+        'DRAFT',
+        'PACKED',
+        'PACKING_IN_PROGRESS',
+        'REJECTED',
+    ]),
+    customer: z.object({
+        enabled: z.boolean(),
+        name: z.string(),
+        id: z.string().uuid(),
+    }),
+    warehouse: z.object({
+        enabled: z.boolean(),
+        name: z.string(),
+        id: z.string().uuid(),
+    }),
+    version: z.number(),
+    references: z.object({
+        customer: z.string(),
+        numericId: z.string(),
+    }),
+    id: z.string().uuid(),
+})
 
 export type SalesOrder = z.infer<typeof salesOrderSchema>
 export type Consignment = z.infer<typeof consignmentSchema>

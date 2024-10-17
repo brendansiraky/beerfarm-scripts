@@ -67,3 +67,11 @@ export async function updateSalesOrderByTranId(
         throw error
     }
 }
+
+// getSalesOrderIdByTranId('SO20840').then((res) => {
+//     console.log(res)
+//     updateSalesOrderByTranId(res.id, res.tranId, {
+//         custbody_ce_estdeliverydate: res.custbody_ce_estdeliverydate,
+//         custbody_status: res.custbody_status,
+//     }).then((res) => console.log(res))
+// })
