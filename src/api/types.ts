@@ -47,6 +47,8 @@ export interface SalesOrderDetailResponse {
     custbody7: boolean
     custbody8: boolean
     custbody9: boolean
+    custbody_3pl_arrival: string
+    custbody_3pl_status: string
     custbody_status: string // Actually doesn't exist in the response, but it's what we're using to update the status of the sales order which is allowed for some reason.
     custbody_auto_send_document_nonstore: boolean
     custbody_bs_ddr_donot_reprocess: boolean

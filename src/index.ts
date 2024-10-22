@@ -15,6 +15,7 @@ import {
     getSalesOrderIdByTranId,
     updateSalesOrderByTranId,
 } from './api/salesOrder'
+import { SalesOrderDetailResponse } from './api/types'
 
 // Define environment type for type-safety
 type Env = {
@@ -87,9 +88,12 @@ app.post(
     zValidator('json', consignmentSchema.partial().passthrough()),
     async (c) => {
         const consignment = c.req.valid('json')
+
+        saveLog(consignment, 'consignment')
+
         const tranIdFromCC = consignment.references?.customer
         if (consignment.details?.runsheet?.date && tranIdFromCC) {
-            // 1. Receive the consignment
+            // 1. Receive the consignmentOrder
 
             // 2. Get the sales order id by the consignment customer
             const salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
@@ -101,7 +105,6 @@ app.post(
             })
         }
 
-        saveLog(consignment, 'consignment')
         return c.json({ message: 'Received - Consignment' }, 202)
     }
 )
@@ -114,7 +117,45 @@ app.post(
     zValidator('json', purchaseOrderSchema.partial().passthrough()),
     async (c) => {
         const purchaseOrder = c.req.valid('json')
+        // 1. Receive the purchaseOrder
+
         saveLog(purchaseOrder, 'purchase')
+
+        const tranIdFromCC = purchaseOrder.references?.customer
+        const status = purchaseOrder?.status
+        const arrivalDate = purchaseOrder?.details?.arrivalDate
+
+        let salesOrder: SalesOrderDetailResponse | undefined
+
+        if (tranIdFromCC) {
+            if (status || arrivalDate) {
+                // 2. Get the sales order id by the purchaseOrder customer
+                salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
+            }
+
+            // 3. If we have a status, update the sales order with the status
+            if (status && salesOrder) {
+                await updateSalesOrderByTranId(
+                    salesOrder.id,
+                    salesOrder.tranId,
+                    {
+                        custbody_3pl_status: status,
+                    }
+                )
+            }
+
+            // 4. If we have an arrival date, update the sales order with the arrival date
+            if (arrivalDate && salesOrder) {
+                await updateSalesOrderByTranId(
+                    salesOrder.id,
+                    salesOrder.tranId,
+                    {
+                        custbody_3pl_arrival: arrivalDate,
+                    }
+                )
+            }
+        }
+
         return c.json({ message: 'Received - Purchase Order' }, 202)
     }
 )
@@ -126,10 +167,12 @@ app.post(
     async (c) => {
         const salesOrder = c.req.valid('json')
 
+        saveLog(salesOrder, 'sales')
+
         const tranIdFromCC = salesOrder.references?.customer
         const status = salesOrder?.status
         if (status && tranIdFromCC) {
-            // 1. Receive the consignment
+            // 1. Receive the salesOrder
 
             // 2. Get the sales order id by the consignment customer
             const salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
@@ -140,7 +183,6 @@ app.post(
             })
         }
 
-        saveLog(salesOrder, 'sales')
         return c.json({ message: 'Received - Sales Order' }, 202)
     }
 )

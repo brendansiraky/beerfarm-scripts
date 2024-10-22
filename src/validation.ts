@@ -32,59 +32,11 @@ const addressSchema = z.object({
 export const purchaseOrderSchema = z.object({
     details: z.object({
         urgent: z.boolean(),
-        invoiceValue: z.object({
-            amount: z.number(),
-            currency: z.string(),
-        }),
-        collect: z.object({
-            address: addressSchema,
-        }),
-        deliver: z.object({
-            method: z.object({
-                type: z.string(),
-            }),
-            address: addressSchema,
-            instructions: z.string(),
-        }),
+        instructions: z.string(),
+        arrivalDate: z.string(),
+        parentId: z.string().uuid(),
+        hasChildren: z.boolean(),
     }),
-    items: z.array(
-        z.object({
-            details: z.object({
-                product: z.object({
-                    customer: z.object({
-                        enabled: z.boolean(),
-                        name: z.string(),
-                        id: z.string(),
-                    }),
-                    name: z.string(),
-                    references: z.object({
-                        code: z.string(),
-                    }),
-                    id: z.string(),
-                }),
-                unitOfMeasure: z.object({
-                    type: z.string(),
-                    name: z.string(),
-                }),
-            }),
-            type: z.string(),
-            measures: z.object({
-                quantity: z.number(),
-            }),
-            references: z.object({
-                numericId: z.string(),
-            }),
-            properties: z.object({
-                sop_custom_field_1: z.string(),
-                sop_custom_field_2: z.string(),
-                sop_custom_field_3: z.string(),
-                batchNumber: z.string(),
-                expiryDate: z.string(),
-            }),
-            id: z.string(),
-        })
-    ),
-    type: z.string(),
     status: z.enum([
         'DRAFT',
         'NOT_YET_RECEIVED',
