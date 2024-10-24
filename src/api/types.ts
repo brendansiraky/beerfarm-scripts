@@ -1,4 +1,4 @@
-export interface SalesOrderResponse {
+export interface OrderResponse {
     links: [
         {
             rel: string
@@ -12,7 +12,7 @@ export interface SalesOrderResponse {
     totalResults: 1
 }
 
-export interface SalesOrderDetailResponse {
+export interface SalesOrder {
     links: Array<{
         rel: string
         href: string
@@ -217,4 +217,99 @@ export interface SalesOrderDetailResponse {
     tranId: string
     updateDropshipOrderQty: string
     webStore: string
+}
+
+export interface TransferOrder {
+    links: Array<unknown>
+    altShippingCost: number
+    canBeUnapproved: boolean
+    createdDate: string
+    currency: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    custbody17: string
+    custbody_3pl_arrival: string
+    custbody_3pl_status: string
+    custbody_ce_bonded: boolean
+    custbody_ce_complianceupdate: boolean
+    custbody_ce_consolidatedtransferorder: { links: Array<unknown> }
+    custbody_ce_excisetaxtransaction: boolean
+    custbody_ce_issuedbatches: { links: Array<unknown> }
+    custbody_ce_license: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    custbody_ce_load_complete: boolean
+    custbody_ce_load_process_status: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    custbody_ce_locationaddress: string
+    custbody_ce_overridecomplianceclass: boolean
+    custbody_ce_pallets: number
+    custbody_ce_tolocbonded: boolean
+    custbody_ce_totalweight: number
+    custbody_nondeductible_ref_tran: { links: Array<unknown> }
+    customForm: {
+        id: string
+        refName: string
+    }
+    exchangeRate: number
+    excludefromsupplyplanning: boolean
+    firmed: boolean
+    id: string
+    incoTerm: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    item: { links: Array<unknown> }
+    lastModifiedDate: string
+    location: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    orderStatus: {
+        id: string
+        refName: string
+    }
+    prevDate: string
+    shipAddress: string
+    shipComplete: boolean
+    shipDate: string
+    shipIsResidential: boolean
+    shipMethod: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    shipOverride: boolean
+    shippingAddress: { links: Array<unknown> }
+    shippingAddress_text: string
+    shippingCost: number
+    shippingCostOverridden: boolean
+    status: {
+        id: string
+        refName: string
+    }
+    subsidiary: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    subtotal: number
+    total: number
+    tranDate: string
+    tranId: string
+    transferLocation: {
+        links: Array<unknown>
+        id: string
+        refName: string
+    }
+    useItemCostAsTransferCost: boolean
 }

@@ -1,21 +1,17 @@
 import { zValidator } from '@hono/zod-validator'
 import { createMiddleware } from 'hono/factory'
 import { serve } from '@hono/node-server'
+import { Hono, HonoRequest } from 'hono'
 import { logger } from 'hono/logger'
 import { env } from 'hono/adapter'
-import { Hono, HonoRequest } from 'hono'
 
+import { updateSalesOrder, updateTransferOrder } from './api/orders'
 import { saveLog } from './helpers/saveLog'
 import {
     consignmentSchema,
     salesOrderSchema,
     purchaseOrderSchema,
 } from './validation'
-import {
-    getSalesOrderIdByTranId,
-    updateSalesOrderByTranId,
-} from './api/salesOrder'
-import { SalesOrderDetailResponse } from './api/types'
 
 // Define environment type for type-safety
 type Env = {
@@ -27,7 +23,7 @@ type Env = {
 // Middleware to authorize requests using a header token
 const authorizeHeaderToken = createMiddleware(async (c, next) => {
     if (c.req.path === '/health') {
-        return c.json({ message: 'OK-V1' }, 200)
+        return c.json({ message: 'OK-V2' }, 200)
     }
 
     const { CC_API_KEY } = env(c)
@@ -88,75 +84,98 @@ app.post(
     zValidator('json', consignmentSchema.partial().passthrough()),
     async (c) => {
         const consignment = c.req.valid('json')
+        saveLog(consignment, 'consignment-incoming')
 
-        saveLog(consignment, 'consignment')
+        try {
+            const tranId = consignment?.references?.customer
+            const consignmentDate = consignment?.details?.runsheet?.date
 
-        const tranIdFromCC = consignment.references?.customer
-        if (consignment.details?.runsheet?.date && tranIdFromCC) {
-            // 1. Receive the consignmentOrder
-
-            // 2. Get the sales order id by the consignment customer
-            const salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
-
-            // 3. Update the sales order with the consignment est delivery date
-            // Add whichever updates to the sales order here.
-            await updateSalesOrderByTranId(salesOrder.id, salesOrder.tranId, {
-                custbody_ce_estdeliverydate: consignment.details.runsheet.date,
-            })
+            if (consignmentDate && tranId) {
+                await updateSalesOrder(tranId, {
+                    custbody_ce_estdeliverydate: consignmentDate,
+                })
+                saveLog(
+                    {
+                        consignment,
+                        updated: {
+                            custbody_ce_estdeliverydate: consignmentDate,
+                        },
+                    },
+                    'consignment-updated'
+                )
+            }
+            return c.json({ message: 'Received - Consignment' }, 202)
+        } catch (error) {
+            saveLog(
+                {
+                    consignment,
+                    error,
+                },
+                'consignment-error'
+            )
+            return c.json({ message: 'Error - Consignment' }, 500)
         }
-
-        return c.json({ message: 'Received - Consignment' }, 202)
     }
 )
 
 // Webhook endpoint for purchase orders
-// TODO - Beerfarm update something in CC which we then need to read the status coming through in the purchaseorder webbook.
-// We need to check if the status is REJECTED, then potentially fire off an email to beerfarm letting them know something was rejected.
+// TODO - We need to check if the status is REJECTED, then potentially fire off an email to beerfarm letting them know something was rejected.
 app.post(
     '/webhooks/hook-purchaseorder',
     zValidator('json', purchaseOrderSchema.partial().passthrough()),
     async (c) => {
-        const purchaseOrder = c.req.valid('json')
-        // 1. Receive the purchaseOrder
+        const purchase = c.req.valid('json')
+        saveLog(purchase, 'purchase-incoming')
 
-        saveLog(purchaseOrder, 'purchase')
+        try {
+            const tranId = purchase?.references?.customer
+            const status = purchase?.status
+            const arrivalDate = purchase?.details?.arrivalDate
 
-        // const tranIdFromCC = purchaseOrder.references?.customer
-        // const status = purchaseOrder?.status
-        // const arrivalDate = purchaseOrder?.details?.arrivalDate
+            // NOTE: Treating status and arrivalDate separately
+            // we don't know if they are always both present.
 
-        // let salesOrder: SalesOrderDetailResponse | undefined
+            if (tranId && status) {
+                await updateTransferOrder(tranId, {
+                    custbody_3pl_status: status,
+                })
+                saveLog(
+                    {
+                        purchase,
+                        updated: {
+                            custbody_3pl_status: status,
+                        },
+                    },
+                    'purchase-updated'
+                )
+            }
 
-        // if (tranIdFromCC) {
-        //     if (status || arrivalDate) {
-        //         // 2. Get the sales order id by the purchaseOrder customer
-        //         salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
-        //     }
+            if (tranId && arrivalDate) {
+                await updateTransferOrder(tranId, {
+                    custbody_3pl_arrival: arrivalDate,
+                })
+                saveLog(
+                    {
+                        purchase,
+                        updated: {
+                            custbody_3pl_arrival: arrivalDate,
+                        },
+                    },
+                    'purchase-updated'
+                )
+            }
 
-        //     // 3. If we have a status, update the sales order with the status
-        //     if (status && salesOrder) {
-        //         await updateSalesOrderByTranId(
-        //             salesOrder.id,
-        //             salesOrder.tranId,
-        //             {
-        //                 custbody_3pl_status: status,
-        //             }
-        //         )
-        //     }
-
-        //     // 4. If we have an arrival date, update the sales order with the arrival date
-        //     if (arrivalDate && salesOrder) {
-        //         await updateSalesOrderByTranId(
-        //             salesOrder.id,
-        //             salesOrder.tranId,
-        //             {
-        //                 custbody_3pl_arrival: arrivalDate,
-        //             }
-        //         )
-        //     }
-        // }
-
-        return c.json({ message: 'Received - Purchase Order' }, 202)
+            return c.json({ message: 'Received - Purchase Order' }, 202)
+        } catch (error) {
+            saveLog(
+                {
+                    purchaseOrder: purchase,
+                    error,
+                },
+                'purchase-error'
+            )
+            return c.json({ message: 'Error - Purchase' }, 500)
+        }
     }
 )
 
@@ -166,24 +185,38 @@ app.post(
     zValidator('json', salesOrderSchema.partial().passthrough()),
     async (c) => {
         const salesOrder = c.req.valid('json')
+        saveLog(salesOrder, 'sales-incoming')
 
-        saveLog(salesOrder, 'sales')
+        try {
+            const tranId = salesOrder?.references?.customer
+            const status = salesOrder?.status
 
-        const tranIdFromCC = salesOrder.references?.customer
-        const status = salesOrder?.status
-        if (status && tranIdFromCC) {
-            // 1. Receive the salesOrder
+            if (tranId && status) {
+                await updateSalesOrder(tranId, {
+                    custbody_status: status,
+                })
+                saveLog(
+                    {
+                        salesOrder,
+                        updated: {
+                            custbody_status: status,
+                        },
+                    },
+                    'sales-updated'
+                )
+            }
 
-            // 2. Get the sales order id by the consignment customer
-            const salesOrder = await getSalesOrderIdByTranId(tranIdFromCC)
-
-            // 3. Update the sales order with the status from the salesorder change
-            await updateSalesOrderByTranId(salesOrder.id, salesOrder.tranId, {
-                custbody_status: status,
-            })
+            return c.json({ message: 'Received - Sales Order' }, 202)
+        } catch (error) {
+            saveLog(
+                {
+                    salesOrder: salesOrder,
+                    error,
+                },
+                'sales-error'
+            )
+            return c.json({ message: 'Error - Purchase' }, 500)
         }
-
-        return c.json({ message: 'Received - Sales Order' }, 202)
     }
 )
 

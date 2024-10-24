@@ -13,7 +13,17 @@ export const saveLog = (data: any, type: string) => {
     }
 
     const filePath = path.join(logDir, filename)
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+    fs.writeFileSync(
+        filePath,
+        JSON.stringify(
+            {
+                data,
+                savedAt: new Date().toISOString(),
+            },
+            null,
+            2
+        )
+    )
     console.log(
         `${type.charAt(0).toUpperCase() + type.slice(1)} log saved: ${filePath}`
     )
