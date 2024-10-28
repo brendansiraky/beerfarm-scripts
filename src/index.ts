@@ -128,7 +128,9 @@ app.post(
         saveLog(purchase, 'purchase-incoming')
 
         try {
-            const tranId = purchase?.references?.customer
+            // For some reason, customer comes with "re-entry-2" attached to it: e.g "TO16750  re-entry-2"
+            // We need to remove this before using it as the transaction ID
+            const tranId = purchase?.references?.customer?.split(' ')[0]
             const status = purchase?.status
             const arrivalDate = purchase?.details?.arrivalDate
 
