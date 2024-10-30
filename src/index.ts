@@ -8,7 +8,7 @@ import cron from 'node-cron'
 
 import { updatePendingConsignments } from './helpers/updatePendingConsignments'
 import { updatePendingSalesOrders } from './helpers/updatePendingSalesOrders'
-import { updateSalesOrder, updateTransferOrder } from './api/netSuite'
+import { updateSalesOrder, updateTransferOrder } from './api/netsuite'
 import { saveLog } from './helpers/saveLog'
 import {
     consignmentSchema,

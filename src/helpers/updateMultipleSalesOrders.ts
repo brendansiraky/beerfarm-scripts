@@ -1,4 +1,4 @@
-import { updateSalesOrder } from '../api/netSuite'
+import { updateSalesOrder } from '../api/netsuite'
 import { SalesOrder } from '../api/types'
 
 export async function updateMultipleSalesOrders(
