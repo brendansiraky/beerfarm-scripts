@@ -8,7 +8,7 @@ import cron from 'node-cron'
 
 import { updatePendingConsignments } from './helpers/updatePendingConsignments'
 import { updatePendingSalesOrders } from './helpers/updatePendingSalesOrders'
-import { updateSalesOrder, updateTransferOrder } from './api/netsuite'
+import { updateSalesOrder, updateTransferOrder } from './api/netSuite'
 import { saveLog } from './helpers/saveLog'
 import {
     consignmentSchema,
@@ -26,7 +26,7 @@ type Env = {
 // Middleware to authorize requests using a header token
 const authorizeHeaderToken = createMiddleware(async (c, next) => {
     if (c.req.path === '/health') {
-        return c.json({ message: 'OK-V2' }, 200)
+        return c.json({ message: 'OK-V3' }, 200)
     }
 
     const { CC_API_KEY } = env(c)

@@ -1,5 +1,5 @@
 import { updateMultipleSalesOrders } from './updateMultipleSalesOrders'
-import { getPendingOrdersByWarehouse } from '../api/netsuite'
+import { getPendingOrdersByWarehouse } from 'src/api/netSuite'
 import { searchCartonCloud } from '../api/cartonCloud'
 
 export async function updatePendingConsignments() {

@@ -315,7 +315,7 @@ export interface TransferOrder {
 }
 
 export type WAREHOUSE_CONFIG = {
-    LOCID: number
+    LOCID: string
     tenantUUID: string
     client_id: string
     client_secret: string

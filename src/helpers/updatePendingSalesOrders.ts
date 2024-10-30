@@ -1,6 +1,6 @@
 import { updateMultipleSalesOrders } from './updateMultipleSalesOrders'
-import { getPendingOrdersByWarehouse } from '../api/netsuite'
-import { searchCartonCloud } from '../api/cartoncloud'
+import { getPendingOrdersByWarehouse } from 'src/api/netSuite'
+import { searchCartonCloud } from '../api/cartonCloud'
 
 export async function updatePendingSalesOrders() {
     const warehouseOrders = await getPendingOrdersByWarehouse('salesOrder')

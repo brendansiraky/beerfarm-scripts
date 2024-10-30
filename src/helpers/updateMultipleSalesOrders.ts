@@ -1,4 +1,4 @@
-import { updateSalesOrder } from '../api/netsuite'
+import { updateSalesOrder } from '../api/netSuite'
 import { SalesOrder } from '../api/types'
 
 export async function updateMultipleSalesOrders(
@@ -32,12 +32,12 @@ export async function updateMultipleSalesOrders(
                 `❌ [${i + 1}/${
                     orders.length
                 }] Failed to update order ${transactionId}:`,
-                error.response.data
+                (error as any).response.data
             )
             results.push({
                 transactionId,
                 status: 'error',
-                error: error.message || 'Unknown error',
+                error: (error as any)?.message || 'Unknown error',
             })
             // Continue with next order instead of throwing
             continue

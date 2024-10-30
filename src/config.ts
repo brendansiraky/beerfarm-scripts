@@ -1,5 +1,3 @@
-import { WAREHOUSE_CONFIG } from './api/types'
-
 const {
     // NetSuite
     NS_CONSUMER_KEY,
@@ -29,6 +27,31 @@ const {
     CRAFT_CLIENT_SECRET,
     CRAFT_CUSTOMER_UUID,
 } = process.env
+
+if (
+    !MOTUS_ID ||
+    !MOTUS_TENANT_UUID ||
+    !MOTUS_CLIENT_ID ||
+    !MOTUS_CLIENT_SECRET ||
+    !MOTUS_CUSTOMER_UUID ||
+    !GROWLER_ID ||
+    !GROWLER_TENANT_UUID ||
+    !GROWLER_CLIENT_ID ||
+    !GROWLER_CLIENT_SECRET ||
+    !GROWLER_CUSTOMER_UUID ||
+    !CRAFT_ID ||
+    !CRAFT_TENANT_UUID ||
+    !CRAFT_CLIENT_ID ||
+    !CRAFT_CLIENT_SECRET ||
+    !CRAFT_CUSTOMER_UUID ||
+    !NS_CONSUMER_KEY ||
+    !NS_CONSUMER_SECRET ||
+    !NS_ACCESS_TOKEN ||
+    !NS_TOKEN_SECRET ||
+    !NS_ACCOUNT_ID
+) {
+    throw new Error('Missing required environment variables')
+}
 
 const NETSUITE_BASE_URL = `https://${NS_ACCOUNT_ID}.suitetalk.api.netsuite.com/services/rest`
 export const NETSUITE = {

@@ -166,7 +166,8 @@ export async function getPendingOrdersByWarehouse(
         // Group orders by warehouse and collect their transaction IDs
         // Creates an object like: { "Warehouse Name": { config: {...}, transactionIds: [...] } }
         const warehouseOrders = response.items.reduce((acc, item) => {
-            const warehouse = WAREHOUSE_LOOKUP[item.name]
+            const warehouse =
+                WAREHOUSE_LOOKUP[item.name as keyof typeof WAREHOUSE_LOOKUP]
             if (warehouse) {
                 if (!acc[item.name]) {
                     acc[item.name] = {
