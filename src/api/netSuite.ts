@@ -161,9 +161,6 @@ export async function getPendingOrdersByWarehouse(
                 `,
             }
         )
-        // SO21169
-        console.log(response)
-        return
 
         // Group orders by warehouse and collect their transaction IDs
         // Creates an object like: { "Warehouse Name": { config: {...}, transactionIds: [...] } }
