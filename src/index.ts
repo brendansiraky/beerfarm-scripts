@@ -233,8 +233,8 @@ app.post(
     }
 )
 
-// Schedule consignment updates every even hour
-cron.schedule('0 0 */2 * * *', async () => {
+// Schedule consignment updates every even hour between 8am and 6pm
+cron.schedule('0 0 8,10,12,14,16,18 * * *', async () => {
     const now = new Date()
     console.log(
         `Running scheduled consignment updates... [${now.toLocaleString()}]`
@@ -249,8 +249,8 @@ cron.schedule('0 0 */2 * * *', async () => {
     }
 })
 
-// Schedule sales order updates every odd hour
-cron.schedule('0 0 1-23/2 * * *', async () => {
+// Schedule sales order updates every odd hour between 7am and 5pm
+cron.schedule('0 0 7,9,11,13,15,17 * * *', async () => {
     const now = new Date()
     console.log(
         `Running scheduled sales order updates... [${now.toLocaleString()}]`
@@ -259,11 +259,12 @@ cron.schedule('0 0 1-23/2 * * *', async () => {
         await updatePendingSalesOrders()
     } catch (error) {
         console.error(
-            'Error updating sales orders, , caught in the CRON job:',
+            'Error updating sales orders, caught in the CRON job:',
             error
         )
     }
 })
+
 // Start the server
 serve({
     fetch: app.fetch,
