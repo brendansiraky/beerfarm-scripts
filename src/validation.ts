@@ -29,6 +29,7 @@ const addressSchema = z.object({
     id: z.string(),
 })
 
+// Inbound Orders
 export const purchaseOrderSchema = z.object({
     details: z.object({
         urgent: z.boolean(),
@@ -174,6 +175,7 @@ export const consignmentSchema = z.object({
     id: z.string().uuid(),
 })
 
+// Outbound Orders
 export const salesOrderSchema = z.object({
     details: z.object({
         urgent: z.boolean(),

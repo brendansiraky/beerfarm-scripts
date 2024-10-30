@@ -1,17 +1,21 @@
 import OAuth from 'oauth-1.0a'
 import crypto from 'crypto-js'
+import { NETSUITE } from '../config'
 
-const CONSUMER_KEY = process.env.NS_CONSUMER_KEY!
-const CONSUMER_SECRET = process.env.NS_CONSUMER_SECRET!
-const ACCESS_TOKEN = process.env.NS_ACCESS_TOKEN!
-const TOKEN_SECRET = process.env.NS_TOKEN_SECRET!
-const NS_ACCOUNT_ID = process.env.NS_ACCOUNT_ID!
+const {
+    NS_CONSUMER_KEY,
+    NS_CONSUMER_SECRET,
+    NS_ACCESS_TOKEN,
+    NS_TOKEN_SECRET,
+    NS_ACCOUNT_ID,
+} = NETSUITE
+
 const SIGNATURE_METHOD = 'HMAC-SHA256'
 
 const oauth = new OAuth({
     consumer: {
-        key: CONSUMER_KEY,
-        secret: CONSUMER_SECRET,
+        key: NS_CONSUMER_KEY!,
+        secret: NS_CONSUMER_SECRET!,
     },
     signature_method: SIGNATURE_METHOD,
     hash_function(base_string: string, key: string) {
@@ -27,8 +31,8 @@ export function getAuthHeader(url: string, method: string): string {
                 method,
             },
             {
-                key: ACCESS_TOKEN,
-                secret: TOKEN_SECRET,
+                key: NS_ACCESS_TOKEN!,
+                secret: NS_TOKEN_SECRET!,
             }
         )
     )

@@ -313,3 +313,11 @@ export interface TransferOrder {
     }
     useItemCostAsTransferCost: boolean
 }
+
+export type WAREHOUSE_CONFIG = {
+    LOCID: number
+    tenantUUID: string
+    client_id: string
+    client_secret: string
+    customerUUID: string
+}

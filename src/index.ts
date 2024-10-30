@@ -4,8 +4,11 @@ import { serve } from '@hono/node-server'
 import { Hono, HonoRequest } from 'hono'
 import { logger } from 'hono/logger'
 import { env } from 'hono/adapter'
+import cron from 'node-cron'
 
-import { updateSalesOrder, updateTransferOrder } from './api/orders'
+import { updatePendingConsignments } from './helpers/updatePendingConsignments'
+import { updatePendingSalesOrders } from './helpers/updatePendingSalesOrders'
+import { updateSalesOrder, updateTransferOrder } from './api/netSuite'
 import { saveLog } from './helpers/saveLog'
 import {
     consignmentSchema,
@@ -84,7 +87,10 @@ app.post(
     zValidator('json', consignmentSchema.partial().passthrough()),
     async (c) => {
         const consignment = c.req.valid('json')
-        saveLog(consignment, 'consignment-incoming')
+        saveLog(
+            consignment,
+            `consignment-incoming-${consignment.references?.customer}`
+        )
 
         try {
             const tranId = consignment?.references?.customer
@@ -101,7 +107,7 @@ app.post(
                             custbody_ce_estdeliverydate: consignmentDate,
                         },
                     },
-                    'consignment-updated'
+                    `consignment-updated-${consignment.references?.customer}`
                 )
             }
             return c.json({ message: 'Received - Consignment' }, 202)
@@ -111,7 +117,7 @@ app.post(
                     consignment,
                     error,
                 },
-                'consignment-error'
+                `consignment-error-${consignment.references?.customer}`
             )
             return c.json({ message: 'Error - Consignment' }, 500)
         }
@@ -125,7 +131,7 @@ app.post(
     zValidator('json', purchaseOrderSchema.partial().passthrough()),
     async (c) => {
         const purchase = c.req.valid('json')
-        saveLog(purchase, 'purchase-incoming')
+        saveLog(purchase, `purchase-incoming-${purchase.references?.customer}`)
 
         try {
             // For some reason, customer comes with "re-entry-2" attached to it: e.g "TO16750  re-entry-2"
@@ -148,7 +154,7 @@ app.post(
                             custbody_3pl_status: status,
                         },
                     },
-                    'purchase-updated'
+                    `purchase-updated-${purchase.references?.customer}`
                 )
             }
 
@@ -163,7 +169,7 @@ app.post(
                             custbody_3pl_arrival: arrivalDate,
                         },
                     },
-                    'purchase-updated'
+                    `purchase-updated-${purchase.references?.customer}`
                 )
             }
 
@@ -174,7 +180,7 @@ app.post(
                     purchaseOrder: purchase,
                     error,
                 },
-                'purchase-error'
+                `purchase-error-${purchase.references?.customer}`
             )
             return c.json({ message: 'Error - Purchase' }, 500)
         }
@@ -187,7 +193,7 @@ app.post(
     zValidator('json', salesOrderSchema.partial().passthrough()),
     async (c) => {
         const salesOrder = c.req.valid('json')
-        saveLog(salesOrder, 'sales-incoming')
+        saveLog(salesOrder, `sales-incoming-${salesOrder.references?.customer}`)
 
         try {
             const tranId = salesOrder?.references?.customer
@@ -204,7 +210,7 @@ app.post(
                             custbody_status: status,
                         },
                     },
-                    'sales-updated'
+                    `sales-updated-${salesOrder.references?.customer}`
                 )
             }
 
@@ -215,13 +221,38 @@ app.post(
                     salesOrder: salesOrder,
                     error,
                 },
-                'sales-error'
+                `sales-error-${salesOrder.references?.customer}`
             )
             return c.json({ message: 'Error - Purchase' }, 500)
         }
     }
 )
 
+// Schedule consignment updates every even hour
+cron.schedule('0 0 */2 * * *', async () => {
+    console.log('Running scheduled consignment updates...')
+    try {
+        await updatePendingConsignments()
+    } catch (error) {
+        console.error(
+            'Error updating consignments, caught in the CRON job:',
+            error
+        )
+    }
+})
+
+// Schedule sales order updates every odd hour
+cron.schedule('0 0 1-23/2 * * *', async () => {
+    console.log('Running scheduled sales order updates...')
+    try {
+        await updatePendingSalesOrders()
+    } catch (error) {
+        console.error(
+            'Error updating sales orders, , caught in the CRON job:',
+            error
+        )
+    }
+})
 // Start the server
 serve({
     fetch: app.fetch,
