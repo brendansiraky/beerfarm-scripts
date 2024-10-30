@@ -8,7 +8,7 @@ import cron from 'node-cron'
 
 import { updatePendingConsignments } from './helpers/updatePendingConsignments'
 import { updatePendingSalesOrders } from './helpers/updatePendingSalesOrders'
-import { updateSalesOrder, updateTransferOrder } from './api/netSuite.js'
+import { updateSalesOrder, updateTransferOrder } from './api/netSuite'
 import { saveLog } from './helpers/saveLog'
 import {
     consignmentSchema,
@@ -230,7 +230,10 @@ app.post(
 
 // Schedule consignment updates every even hour
 cron.schedule('0 0 */2 * * *', async () => {
-    console.log('Running scheduled consignment updates...')
+    const now = new Date()
+    console.log(
+        `Running scheduled consignment updates... [${now.toLocaleString()}]`
+    )
     try {
         await updatePendingConsignments()
     } catch (error) {
@@ -243,7 +246,10 @@ cron.schedule('0 0 */2 * * *', async () => {
 
 // Schedule sales order updates every odd hour
 cron.schedule('0 0 1-23/2 * * *', async () => {
-    console.log('Running scheduled sales order updates...')
+    const now = new Date()
+    console.log(
+        `Running scheduled sales order updates... [${now.toLocaleString()}]`
+    )
     try {
         await updatePendingSalesOrders()
     } catch (error) {
