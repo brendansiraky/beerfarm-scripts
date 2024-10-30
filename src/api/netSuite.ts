@@ -196,5 +196,3 @@ export async function getPendingOrdersByWarehouse(
         })
     }
 }
-
-getPendingOrdersByWarehouse('consignment')
