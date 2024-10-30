@@ -27,9 +27,3 @@ export const saveLog = (folderName: string, id: string, data: unknown) => {
     )
     console.log(`Log saved to ${folderName}/${filename}`)
 }
-
-saveLog('consignment-incoming', 'S0123' || 'NO_ID', {
-    consignmentStuff: '',
-})
-
-
