@@ -71,41 +71,39 @@ async function updateOrder<T>(url: string, updateData: Partial<T>) {
     }
 }
 
-// Specific to sales order
+// Generic order update function
+async function updateOrderByType<T extends SalesOrder | TransferOrder>(
+    transactionId: string,
+    updateData: Partial<T>,
+    baseUrl: string
+) {
+    const order = await getOrderByTransactionId<T>(baseUrl, {
+        q: `tranid IS "${transactionId}"`,
+        limit: 1,
+    })
+
+    return await updateOrder<T>(`${baseUrl}/${order.id}`, { ...updateData })
+}
+
 export async function updateSalesOrder(
     transactionId: string,
     updateData: Partial<SalesOrder>
 ) {
-    const salesOrder = await getOrderByTransactionId<SalesOrder>(
-        NETSUITE.SALES_ORDER_URL,
-        {
-            q: `tranid IS "${transactionId}"`,
-            limit: 1,
-        }
-    )
-
-    return await updateOrder<SalesOrder>(
-        `${NETSUITE.SALES_ORDER_URL}/${salesOrder.id}`,
-        { ...updateData }
+    return updateOrderByType<SalesOrder>(
+        transactionId,
+        updateData,
+        NETSUITE.SALES_ORDER_URL
     )
 }
 
-// Specific to transfer order
 export async function updateTransferOrder(
     transactionId: string,
     updateData: Partial<TransferOrder>
 ) {
-    const transferOrder = await getOrderByTransactionId<TransferOrder>(
-        NETSUITE.TRANSFER_ORDER_URL,
-        {
-            q: `tranid IS "${transactionId}"`,
-            limit: 1,
-        }
-    )
-
-    return await updateOrder<TransferOrder>(
-        `${NETSUITE.TRANSFER_ORDER_URL}/${transferOrder.id}`,
-        { ...updateData }
+    return updateOrderByType<TransferOrder>(
+        transactionId,
+        updateData,
+        NETSUITE.TRANSFER_ORDER_URL
     )
 }
 
@@ -148,7 +146,8 @@ export async function getPendingOrdersByWarehouse(
                 SELECT MIN(t.tranid) as tranid, 
                        MIN(t.trandate) as trandate, 
                        MIN(l.name) as name, 
-                       MIN(s.id) as salesOrderId
+                       MIN(s.id) as salesOrderId,
+                       MIN(t.custbody_status) as salesstatus
                 FROM transaction t
                     LEFT JOIN salesOrdered s
                     ON s.transaction = t.id
@@ -162,6 +161,9 @@ export async function getPendingOrdersByWarehouse(
                 `,
             }
         )
+        // SO21169
+        console.log(response)
+        return
 
         // Group orders by warehouse and collect their transaction IDs
         // Creates an object like: { "Warehouse Name": { config: {...}, transactionIds: [...] } }
@@ -194,3 +196,5 @@ export async function getPendingOrdersByWarehouse(
         })
     }
 }
+
+getPendingOrdersByWarehouse('consignment')

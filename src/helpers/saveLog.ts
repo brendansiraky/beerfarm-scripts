@@ -1,12 +1,13 @@
 import path from 'path'
 import fs from 'fs'
 
-export const saveLog = (data: any, type: string) => {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const filename = `${type}-${timestamp}.json`
+export const saveLog = (folderName: string, id: string, data: unknown) => {
+    const timestamp = new Date()
+    const timeString = `${timestamp.getHours()}-${timestamp.getMinutes()}-${timestamp.getSeconds()}`
+    const filename = `${id}-${timeString}.json`
 
     const projectRoot = process.cwd()
-    const logDir = path.join(projectRoot, 'logs', type)
+    const logDir = path.join(projectRoot, 'logs', folderName)
 
     if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir, { recursive: true })
@@ -18,13 +19,17 @@ export const saveLog = (data: any, type: string) => {
         JSON.stringify(
             {
                 data,
-                savedAt: new Date().toISOString(),
+                savedAt: timestamp.toISOString(),
             },
             null,
             2
         )
     )
-    console.log(
-        `${type.charAt(0).toUpperCase() + type.slice(1)} log saved: ${filePath}`
-    )
+    console.log(`Log saved to ${folderName}/${filename}`)
 }
+
+saveLog('consignment-incoming', 'S0123' || 'NO_ID', {
+    consignmentStuff: '',
+})
+
+

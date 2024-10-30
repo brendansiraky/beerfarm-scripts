@@ -23,6 +23,8 @@ type Env = {
     }
 }
 
+const NO_ID = 'no-id-included'
+
 // Middleware to authorize requests using a header token
 const authorizeHeaderToken = createMiddleware(async (c, next) => {
     if (c.req.path === '/health') {
@@ -44,15 +46,12 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
     const body = await getValidJSON(c.req)
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        saveLog(
-            {
-                request: c.req,
-                authHeader,
-                message: 'Invalid authorization header',
-                body,
-            },
-            'auth-unauthorized'
-        )
+        saveLog('auth-unauthorized', '000000', {
+            request: c.req,
+            authHeader,
+            message: 'Invalid authorization header',
+            body,
+        })
         return c.json({ message: 'Invalid authorization header' }, 401)
     }
 
@@ -61,15 +60,12 @@ const authorizeHeaderToken = createMiddleware(async (c, next) => {
         return c.json({ message: 'Not authorized' }, 401)
     }
 
-    saveLog(
-        {
-            request: c.req,
-            authHeader,
-            message: 'Authorized',
-            body,
-        },
-        'auth-authorized'
-    )
+    saveLog('auth-authorized', '000000', {
+        request: c.req,
+        authHeader,
+        message: 'Authorized',
+        body,
+    })
 
     await next()
 })
@@ -87,9 +83,11 @@ app.post(
     zValidator('json', consignmentSchema.partial().passthrough()),
     async (c) => {
         const consignment = c.req.valid('json')
+
         saveLog(
-            consignment,
-            `consignment-incoming-${consignment.references?.customer}`
+            'consignment-incoming',
+            consignment?.references?.customer || NO_ID,
+            consignment
         )
 
         try {
@@ -101,23 +99,25 @@ app.post(
                     custbody_ce_estdeliverydate: consignmentDate,
                 })
                 saveLog(
+                    'consignment-updated',
+                    consignment?.references?.customer || NO_ID,
                     {
                         consignment,
                         updated: {
                             custbody_ce_estdeliverydate: consignmentDate,
                         },
-                    },
-                    `consignment-updated-${consignment.references?.customer}`
+                    }
                 )
             }
             return c.json({ message: 'Received - Consignment' }, 202)
         } catch (error) {
             saveLog(
+                'consignment-error',
+                consignment?.references?.customer || NO_ID,
                 {
                     consignment,
                     error,
-                },
-                `consignment-error-${consignment.references?.customer}`
+                }
             )
             return c.json({ message: 'Error - Consignment' }, 500)
         }
@@ -131,7 +131,12 @@ app.post(
     zValidator('json', purchaseOrderSchema.partial().passthrough()),
     async (c) => {
         const purchase = c.req.valid('json')
-        saveLog(purchase, `purchase-incoming-${purchase.references?.customer}`)
+
+        saveLog(
+            'purchase-incoming',
+            purchase?.references?.customer?.split(' ')[0] || NO_ID,
+            purchase
+        )
 
         try {
             // For some reason, customer comes with "re-entry-2" attached to it: e.g "TO16750  re-entry-2"
@@ -147,41 +152,37 @@ app.post(
                 await updateTransferOrder(tranId, {
                     custbody_3pl_status: status,
                 })
-                saveLog(
-                    {
-                        purchase,
-                        updated: {
-                            custbody_3pl_status: status,
-                        },
+                saveLog('purchase-updated', tranId || NO_ID, {
+                    purchase,
+                    updated: {
+                        custbody_3pl_status: status,
                     },
-                    `purchase-updated-${purchase.references?.customer}`
-                )
+                })
             }
 
             if (tranId && arrivalDate) {
                 await updateTransferOrder(tranId, {
                     custbody_3pl_arrival: arrivalDate,
                 })
-                saveLog(
-                    {
-                        purchase,
-                        updated: {
-                            custbody_3pl_arrival: arrivalDate,
-                        },
+                saveLog('purchase-updated', tranId || NO_ID, {
+                    purchase,
+                    updated: {
+                        custbody_3pl_arrival: arrivalDate,
                     },
-                    `purchase-updated-${purchase.references?.customer}`
-                )
+                })
             }
 
             return c.json({ message: 'Received - Purchase Order' }, 202)
         } catch (error) {
             saveLog(
+                'purchase-error',
+                purchase?.references?.customer?.split(' ')[0] || NO_ID,
                 {
                     purchaseOrder: purchase,
                     error,
-                },
-                `purchase-error-${purchase.references?.customer}`
+                }
             )
+
             return c.json({ message: 'Error - Purchase' }, 500)
         }
     }
@@ -193,7 +194,11 @@ app.post(
     zValidator('json', salesOrderSchema.partial().passthrough()),
     async (c) => {
         const salesOrder = c.req.valid('json')
-        saveLog(salesOrder, `sales-incoming-${salesOrder.references?.customer}`)
+        saveLog(
+            'sales-incoming',
+            salesOrder?.references?.customer || NO_ID,
+            salesOrder
+        )
 
         try {
             const tranId = salesOrder?.references?.customer
@@ -203,26 +208,26 @@ app.post(
                 await updateSalesOrder(tranId, {
                     custbody_status: status,
                 })
+
                 saveLog(
+                    'sales-updated',
+                    salesOrder?.references?.customer || NO_ID,
                     {
                         salesOrder,
                         updated: {
                             custbody_status: status,
                         },
-                    },
-                    `sales-updated-${salesOrder.references?.customer}`
+                    }
                 )
             }
 
             return c.json({ message: 'Received - Sales Order' }, 202)
         } catch (error) {
-            saveLog(
-                {
-                    salesOrder: salesOrder,
-                    error,
-                },
-                `sales-error-${salesOrder.references?.customer}`
-            )
+            saveLog('sales-error', salesOrder?.references?.customer || NO_ID, {
+                salesOrder: salesOrder,
+                error,
+            })
+
             return c.json({ message: 'Error - Purchase' }, 500)
         }
     }
