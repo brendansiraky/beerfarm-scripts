@@ -2,6 +2,8 @@ import axios from 'axios'
 import qs from 'qs'
 
 import { Consignment, SalesOrder, PurchaseOrder } from '../validation'
+import { saveLog } from 'src/helpers/saveLog'
+import { WAREHOUSE_LOOKUP } from 'src/config'
 import { WAREHOUSE_CONFIG } from './types'
 
 export type CartonCloudOrderType = {
@@ -90,6 +92,21 @@ export async function searchCartonCloud<T extends OrderType>(
         console.log(
             `[CartonCloud] Search complete. Found ${searchResponse.data.length} results`
         )
+
+        const warehouseName =
+            Object.entries(WAREHOUSE_LOOKUP).find(
+                ([_, config]) => config.LOCID === warehouseConfig.LOCID
+            )?.[0] || ''
+
+        saveLog('carton-cloud-api-calls', `${warehouseName}`, {
+            warehouse: {
+                warehouseName: warehouseName,
+                ...WAREHOUSE_LOOKUP[
+                    warehouseName as keyof typeof WAREHOUSE_LOOKUP
+                ],
+                transactionIds,
+            },
+        })
 
         return searchResponse.data
     } catch (error) {

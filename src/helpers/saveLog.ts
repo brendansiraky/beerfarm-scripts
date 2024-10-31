@@ -3,7 +3,7 @@ import fs from 'fs'
 
 export const saveLog = (folderName: string, id: string, data: unknown) => {
     const timestamp = new Date()
-    const timeString = `${timestamp.getHours()}-${timestamp.getMinutes()}-${timestamp.getSeconds()}`
+    const timeString = `${timestamp.getDay()}-${timestamp.getHours()}-${timestamp.getMinutes()}-${timestamp.getSeconds()}`
     const filename = `${id}-${timeString}.json`
 
     const projectRoot = process.cwd()
