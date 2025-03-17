@@ -5,6 +5,8 @@ import { Hono, HonoRequest } from 'hono'
 import { logger } from 'hono/logger'
 import { env } from 'hono/adapter'
 import cron from 'node-cron'
+import path from 'path'
+import fs from 'fs'
 
 import { updatePendingConsignments } from './helpers/updatePendingConsignments'
 import { updatePendingSalesOrders } from './helpers/updatePendingSalesOrders'
@@ -232,6 +234,100 @@ app.post(
         }
     }
 )
+
+// Add endpoint to retrieve all logs by order type and ID
+app.get('/logs/:orderType/:id', async (c) => {
+    const orderType = c.req.param('orderType')
+    const id = c.req.param('id')
+
+    // Validate the order type parameter
+    const validOrderTypes = ['consignment', 'sales', 'purchase']
+
+    if (!validOrderTypes.includes(orderType)) {
+        return c.json(
+            {
+                message:
+                    'Invalid order type. Must be one of: consignment, sales, purchase',
+            },
+            400
+        )
+    }
+
+    try {
+        const projectRoot = process.cwd()
+        const logTypes = [
+            `${orderType}-incoming`,
+            `${orderType}-updated`,
+            `${orderType}-error`,
+        ]
+        const allLogs = []
+
+        for (const type of logTypes) {
+            const logDir = path.join(projectRoot, 'logs', type)
+
+            if (!fs.existsSync(logDir)) {
+                continue // Skip if directory doesn't exist
+            }
+
+            // Read all files in the directory
+            const files = fs.readdirSync(logDir)
+
+            // Filter files that start with the provided ID
+            const matchingFiles = files.filter((file) =>
+                file.startsWith(`${id}-`)
+            )
+
+            // Process each matching file
+            for (const file of matchingFiles) {
+                const filePath = path.join(logDir, file)
+                const fileContent = fs.readFileSync(filePath, 'utf8')
+                const logData = JSON.parse(fileContent)
+
+                allLogs.push({
+                    id,
+                    type,
+                    filename: file,
+                    data: logData,
+                })
+            }
+        }
+
+        if (allLogs.length === 0) {
+            return c.json(
+                {
+                    message: `No ${orderType} logs found for the specified ID`,
+                },
+                404
+            )
+        }
+
+        // Sort all logs by timestamp (newest first)
+        allLogs.sort((a, b) => {
+            const timeA = new Date(a.data.savedAt).getTime()
+            const timeB = new Date(b.data.savedAt).getTime()
+            return timeB - timeA
+        })
+
+        return c.json(
+            {
+                id,
+                orderType,
+                count: allLogs.length,
+                logs: allLogs,
+            },
+            200
+        )
+    } catch (error) {
+        console.error(`Error retrieving ${orderType} logs:`, error)
+        return c.json(
+            {
+                message: `Error retrieving ${orderType} logs`,
+                error: String(error),
+            },
+            500
+        )
+    }
+})
 
 // Schedule consignment updates every even hour between 8am and 6pm
 cron.schedule('0 0 8,10,12,14,16,18 * * *', async () => {
