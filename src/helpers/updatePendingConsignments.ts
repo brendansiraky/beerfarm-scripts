@@ -3,6 +3,7 @@ import { getPendingOrdersByWarehouse } from 'src/api/netSuite'
 import { searchCartonCloud } from '../api/cartonCloud'
 
 export async function updatePendingConsignments() {
+    // Query NetSuite for pending consignment orders
     const warehouseOrders = await getPendingOrdersByWarehouse('consignment')
 
     if (!warehouseOrders) {
@@ -40,3 +41,5 @@ export async function updatePendingConsignments() {
         return []
     }
 }
+
+updatePendingConsignments()

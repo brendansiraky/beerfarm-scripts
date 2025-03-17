@@ -3,6 +3,7 @@ import { getPendingOrdersByWarehouse } from 'src/api/netSuite'
 import { searchCartonCloud } from '../api/cartonCloud'
 
 export async function updatePendingSalesOrders() {
+    // Query NetSuite for pending sales orders
     const warehouseOrders = await getPendingOrdersByWarehouse('salesOrder')
 
     if (!warehouseOrders) {

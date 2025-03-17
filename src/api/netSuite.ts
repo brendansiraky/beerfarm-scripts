@@ -118,7 +118,11 @@ type QueryResponse = {
 }
 
 export async function getPendingOrdersByWarehouse(
-    type: 'consignment' | 'salesOrder'
+    type: 'consignment' | 'salesOrder',
+    options?: {
+        afterDate?: Date
+        beforeDate?: Date
+    }
 ) {
     const typeLookup = {
         consignment: {
@@ -129,14 +133,20 @@ export async function getPendingOrdersByWarehouse(
         },
     }
 
-    const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000 * 2
-    const yesterday = new Date(Date.now() - ONE_DAY_IN_MS)
-    const formattedDate = yesterday.toLocaleDateString('en-GB')
+    // Set default afterDate to 28 days ago
+    const defaultAfterDate = new Date()
+    defaultAfterDate.setDate(defaultAfterDate.getDate() - 28)
+
+    // Use provided dates or defaults
+    const afterDate = options?.afterDate || defaultAfterDate
+    const beforeDate = options?.beforeDate || new Date()
+
+    // Format dates in the format NetSuite expects (DD/MM/YYYY)
+    const formattedAfterDate = afterDate.toLocaleDateString('en-GB')
+    const formattedBeforeDate = beforeDate.toLocaleDateString('en-GB')
 
     try {
         // Query NetSuite for sales orders that:
-        // - Have no estimated delivery date
-        // - Were created after yesterday
         // Returns transaction ID, date, warehouse name, and sales order ID
         const response = await netSuiteRequest<QueryResponse>(
             `${NETSUITE.QUERY_URL}`,
@@ -154,7 +164,8 @@ export async function getPendingOrdersByWarehouse(
                     LEFT JOIN location l
                     ON l.id = s.location
                 WHERE t.type = 'SalesOrd'
-                AND t.trandate > '${formattedDate}'
+                AND t.trandate > '${formattedAfterDate}'
+                AND t.trandate < '${formattedBeforeDate}'
                 AND t.${typeLookup[type].updateFieldName} IS NULL
                 GROUP BY t.tranid
                 ORDER BY t.tranid

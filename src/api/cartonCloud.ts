@@ -89,14 +89,14 @@ export async function searchCartonCloud<T extends OrderType>(
             }
         )
 
-        console.log(
-            `[CartonCloud] Search complete. Found ${searchResponse.data.length} results`
-        )
-
         const warehouseName =
             Object.entries(WAREHOUSE_LOOKUP).find(
                 ([_, config]) => config.LOCID === warehouseConfig.LOCID
             )?.[0] || ''
+
+        console.log(
+            `[CartonCloud] Search complete. Found ${searchResponse.data.length} results for ${warehouseName}`
+        )
 
         saveLog('carton-cloud-api-calls', `${warehouseName}`, {
             warehouse: {
@@ -105,6 +105,7 @@ export async function searchCartonCloud<T extends OrderType>(
                     warehouseName as keyof typeof WAREHOUSE_LOOKUP
                 ],
                 transactionIds,
+                data: searchResponse.data,
             },
         })
 
