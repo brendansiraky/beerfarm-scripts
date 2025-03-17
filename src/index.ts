@@ -235,6 +235,88 @@ app.post(
     }
 )
 
+// Add endpoint to retrieve Carton Cloud API logs by transaction ID
+app.get('/logs/carton-cloud-api-calls/:transactionId', async (c) => {
+    const transactionId = c.req.param('transactionId')
+
+    try {
+        const projectRoot = process.cwd()
+        const logDir = path.join(projectRoot, 'logs', 'carton-cloud-api-calls')
+
+        if (!fs.existsSync(logDir)) {
+            return c.json(
+                {
+                    message: 'No Carton Cloud API logs directory found',
+                },
+                404
+            )
+        }
+
+        // Read all files in the directory
+        const files = fs.readdirSync(logDir)
+        const matchingLogs = []
+
+        // Process each file to find those containing the transaction ID
+        for (const file of files) {
+            const filePath = path.join(logDir, file)
+            const fileContent = fs.readFileSync(filePath, 'utf8')
+
+            try {
+                const logData = JSON.parse(fileContent)
+
+                // Check if the transaction ID is in the transactionIds array
+                if (
+                    logData.data?.warehouse?.transactionIds?.includes(
+                        transactionId
+                    )
+                ) {
+                    matchingLogs.push({
+                        filename: file,
+                        data: logData,
+                    })
+                }
+            } catch (error) {
+                console.error(`Error parsing JSON from file ${file}:`, error)
+                // Continue to next file if there's an error with this one
+            }
+        }
+
+        if (matchingLogs.length === 0) {
+            return c.json(
+                {
+                    message: `No Carton Cloud API logs found for transaction ID: ${transactionId}`,
+                },
+                404
+            )
+        }
+
+        // Sort logs by timestamp (newest first)
+        matchingLogs.sort((a, b) => {
+            const timeA = new Date(a.data.savedAt).getTime()
+            const timeB = new Date(b.data.savedAt).getTime()
+            return timeB - timeA
+        })
+
+        return c.json(
+            {
+                transactionId,
+                count: matchingLogs.length,
+                logs: matchingLogs,
+            },
+            200
+        )
+    } catch (error) {
+        console.error(`Error retrieving Carton Cloud API logs:`, error)
+        return c.json(
+            {
+                message: `Error retrieving Carton Cloud API logs`,
+                error: String(error),
+            },
+            500
+        )
+    }
+})
+
 // Add endpoint to retrieve all logs by order type and ID
 app.get('/logs/:orderType/:id', async (c) => {
     const orderType = c.req.param('orderType')
