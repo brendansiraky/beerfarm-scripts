@@ -1,11 +1,13 @@
 import { updateSalesOrder } from '../api/netSuite'
 import { SalesOrder } from '../api/types'
+import { saveLog } from './saveLog'
 
 export async function updateMultipleSalesOrders(
     orders: {
         transactionId: string
         updateData: Partial<SalesOrder>
-    }[]
+    }[],
+    type: 'sales' | 'consignment'
 ) {
     console.log(`Starting batch update for ${orders.length} orders...`)
     const results: any[] = []
@@ -17,6 +19,10 @@ export async function updateMultipleSalesOrders(
         )
         try {
             const result = await updateSalesOrder(transactionId, updateData)
+            saveLog(`cron-${type}-updated`, result.tranId || 'no-id-included', {
+                data: result,
+            })
+
             console.log(
                 `✅ [${i + 1}/${
                     orders.length

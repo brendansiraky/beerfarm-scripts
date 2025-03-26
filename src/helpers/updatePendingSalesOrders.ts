@@ -35,7 +35,7 @@ export async function updatePendingSalesOrders() {
 
     // Update NetSuite if we found any orders with runsheet dates
     if (ordersToUpdate.length > 0) {
-        return await updateMultipleSalesOrders(ordersToUpdate)
+        return await updateMultipleSalesOrders(ordersToUpdate, 'sales')
     } else {
         console.log('No orders found with runsheet dates to update')
         return []
