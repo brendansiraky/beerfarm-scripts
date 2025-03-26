@@ -30,7 +30,7 @@ const NO_ID = 'no-id-included'
 // Middleware to authorize requests using a header token
 const authorizeHeaderToken = createMiddleware(async (c, next) => {
     if (c.req.path === '/health') {
-        return c.json({ message: 'OK-V3' }, 200)
+        return c.json({ message: 'OK-V4' }, 200)
     }
 
     const { CC_API_KEY } = env(c)
